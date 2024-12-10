@@ -22,9 +22,11 @@ if(isset($_POST["login"]) && isset($_POST["password"]) && !empty($_POST["login"]
     }else if(substr($username, 0, 1) == "p"){
         $selectThisCurator = "SELECT * FROM `kurator` WHERE `kurator`.`login-kurator` = '$username' AND `kurator`.`password-kurator` = '$password'";
         $queryForThisCurator = mysqli_query($link,$selectThisCurator);
+        $row = mysqli_fetch_assoc($queryForThisCurator);
         if(mysqli_num_rows($queryForThisCurator) == 1){
             $_SESSION["user"] = "curator";
             $_SESSION["login"] = $username;
+            $_SESSION["idcurator"] = $row["id-kurator"];
             header("Location:curator.php");
         }
     }else{
