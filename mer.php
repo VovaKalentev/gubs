@@ -35,7 +35,7 @@ if(isset($_POST["disc"]) && isset($_POST["mark"]) && isset($_POST["exam"])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>curator</title>
+    <title>Вы мэр</title>
 </head>
 <body>
 <?php 
@@ -97,8 +97,6 @@ if(isset($_POST["disc"]) && isset($_POST["mark"]) && isset($_POST["exam"])){
         }else{
             echo "Проблемка(";
         }
-    }else{
-        header("Location:index.php");
     }?>
     <a href="exit.php">Выйти из аккаунта</a>
 </body>

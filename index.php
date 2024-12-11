@@ -2,40 +2,28 @@
 error_reporting(E_ALL);
 require_once("config.php");
 session_start();
-if(isset($_POST["login"]) && isset($_POST["password"]) && !empty($_POST["login"]) && !empty($_POST["password"])){
+if(isset($_POST["login"]) && !empty($_POST["login"])){
     $username = $_POST["login"];
-    $password = $_POST["password"];
     mysqli_real_escape_string($link,$username);
-    mysqli_real_escape_string($link,$password);
+    $selectThisVillager = "SELECT `id-villager`,`login-villager`, `status`.`name-status` FROM `villagers`,`status` WHERE `login-villager` = '$username' AND `status`.`id-status` = `status--villager`;";
+    $queryForThisVillager = mysqli_query($link,$selectThisVillager);
     $_SESSION["login"] = $username;
-    if($username == "admin"|| $password == "admin"){
-        $_SESSION["user"] = "admin";
-        header("Location:admin.php");
-    }else if(substr($username, 0, 1) == "s"){
-        $selectThisStudent = "SELECT * FROM `student` WHERE `login-student` = '$username' AND `password-student` = '$password'";
-        $queryForThisStudent = mysqli_query($link,$selectThisStudent);
-        if(mysqli_num_rows($queryForThisStudent) == 1){
-            $_SESSION["user"] = "student";
-            $_SESSION["login"] = $username;
-            header("Location:student.php");
-        }
-    }else if(substr($username, 0, 1) == "p"){
-        $selectThisCurator = "SELECT * FROM `kurator` WHERE `kurator`.`login-kurator` = '$username' AND `kurator`.`password-kurator` = '$password'";
-        $queryForThisCurator = mysqli_query($link,$selectThisCurator);
-        $row = mysqli_fetch_assoc($queryForThisCurator);
-        if(mysqli_num_rows($queryForThisCurator) == 1){
-            $_SESSION["user"] = "curator";
-            $_SESSION["login"] = $username;
-            $_SESSION["idcurator"] = $row["id-kurator"];
-            header("Location:curator.php");
+    if(mysqli_num_rows($queryForThisVillager) > 0){
+        $row = mysqli_fetch_assoc($queryForThisVillager);
+        if($row["name-status"] == "Губернатор"){
+            $_SESSION["user"] = "gub";
+            header("Location:gubernator.php");
+        }else if($row["name-status"] == "Мэр"){
+            $_SESSION["user"] = "mer";
+            header("Location:mer.php");
+        }else if($row["name-status"] == "Житель"){
+            $_SESSION["user"] = "git";
+            header("Location:villager.php");
         }
     }else{
         echo "Вы не зарегистрированы(";
     }
-}else{
-    echo `<p>Заполните все поля</p>`;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,7 +35,6 @@ if(isset($_POST["login"]) && isset($_POST["password"]) && !empty($_POST["login"]
 <body>
 <form action="" method="post">
     <input type="text" name="login" placeholder="Введите логин">
-    <input type="password" name="password" placeholder="Введите пароль">
     <input type="submit" value="Авторизоваться" id="button">
 </form>
 </body>
