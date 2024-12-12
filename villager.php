@@ -2,6 +2,20 @@
 error_reporting(E_ALL);
 require_once("config.php");
 session_start();
+$path = 'images/';
+$_SESSION["imagesNameArray"] = [];
+if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+	if (!@copy($_FILES['picture']['tmp_name'], $path . $_FILES['picture']['name'])){
+		echo 'Что-то пошло не так';
+    }else{
+		echo 'Загрузка удачна';
+        $namePicture = $_FILES['picture']['name'];
+        $login = $_SESSION["login"];
+        $updatePicture = mysqli_query($link,"UPDATE `villagers` SET `picture`='$namePicture' WHERE `login-villager` = '$login'");
+        unset($_POST);
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,56 +23,72 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вы житель</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <?php 
-    if($_SESSION["user"] == "student"){
+    if($_SESSION["user"] == "villager"){
         $login = $_SESSION["login"];
-        $selectThisStudent = "SELECT `student`.`id-student` ,`kurator`.`group-kurator`,`FIO-student`,`kurator`.`kurator` FROM `student`,`kurator` WHERE `student`.`group-student` = `kurator`.`id-kurator` AND `student`.`login-student` = '$login'";
-        $queryForThisStudent = mysqli_query($link, $selectThisStudent);
-        if(mysqli_num_rows($queryForThisStudent) > 0){
-            $student = mysqli_fetch_assoc($queryForThisStudent);
-            $id = $student["id-student"];
-            $selectMarkThisStudent = "SELECT `estimation-mark` FROM `mark` WHERE `FIO-mark` = '$id'";
-            $queryMarkThisStudent = mysqli_query($link, $selectMarkThisStudent);
-            $summ = 0;
-            $count = 0;
-            while($row = mysqli_fetch_assoc($queryMarkThisStudent)){
-                $count++;
-                $summ += $row["estimation-mark"];
-            }
-            $srBal = round($summ/$count,1);
-            if($srBal <= 2.99){
-                $reit = 1;
-            }else if($srBal >= 3 && $srBal <= 3.99){
-                $reit = 2;
-            }else if($srBal >= 4 && $srBal <= 5){
-                $reit = 3;
-            }else{
-                $reit = "Вауу";
-            }
+        $queryForThisVillager = mysqli_query($link, "SELECT `id-villager`, `fio-villager`, `login-villager`, `status`.`name-status`, `ctities`.`name-city`, `post`.`name-post`,`picture` FROM `villagers`,`status`, `ctities`, `post` WHERE `status`.`id-status` = `villagers`.`status--villager` AND `ctities`.`id-city` = `villagers`.`city-villager` AND `post`.`id-post` = `villagers`.`post-villager` AND `login-villager` = '$login'");
+        if(mysqli_num_rows($queryForThisVillager) > 0){
+            $villager = mysqli_fetch_assoc($queryForThisVillager);
+            $_SESSION["idPic"] = $villager["login-villager"];
+            $id = $villager["id-villager"];
+            $pathImg = "";
             ?>
             <table border="1">
                 <tr>
-                    <th>Группа</th>
-                    <th>Студент</th>
-                    <th>Куратор</th>
-                    <th>Средний бал</th>
-                    <th>Рейтинг</th>
+                    <th>Имя</th>
+                    <th>Статус</th>
+                    <th>Город</th>
+                    <th>Пост</th>
+                    <th>Фото</th>
                 </tr>
                 <tr>
-                    <td><?php echo $student["group-kurator"]; ?></td>
-                    <td><?php echo $student["FIO-student"]; ?></td>
-                    <td><?php echo $student["kurator"]; ?></td>
-                    <td><?php echo $srBal ?></td>
-                    <td><?php echo $reit; ?></td>
-                </tr>
+                    <td><?php echo $villager["fio-villager"]; ?></td>
+                    <td><?php echo $villager["name-status"]; ?></td>
+                    <td><?php echo $villager["name-city"]; ?></td>
+                    <td><?php echo $villager["name-post"]; ?></td>
+                    <td><a class="link" href="#"><img width="50" height="50" src="<?php if(!empty($villager["picture"])){ $pathImg = $villager["picture"]; $_SESSION["path"] = $pathImg;echo "images\\$pathImg";} ?>" alt="У вас нет картинки"></a></td></tr>
             </table>
+            <dialog id="modal">
+                <article  class="modalInside">
+                    <a href="<?php echo $home; ?>.php" class="exit">X</a>
+                    <img src="images\<?php echo $pathImg; $_SESSION["path"] = ""; ?>" alt="">
+                </article>
+            </dialog>
     <?php 
         }else{
             echo "Проблемка(";
         }
-    }?>
+        ?>
+        <form enctype="multipart/form-data" method="post"> 
+            <input name="picture" type="file" />
+            <input type="submit" value="Загрузить" />
+        </form>
+<?php
+    }else{
+        header("Location: index.php");
+    }
+        ?>
     <a href="exit.php">Выйти из аккаунта</a>
+    <script>
+        let allLink =document.querySelectorAll(".link");
+        let allExit =document.querySelectorAll(".exit");
+        let modal = document.querySelector("#modal");
+        allLink.forEach(link => {
+            link.addEventListener('click',(e)=>{
+                e.preventDefault();
+                modal.showModal();
+            });
+        }); 
+        allExit.forEach(exit => {
+            exit.addEventListener('click',(e)=>{
+                e.preventDefault();
+                modal.close();
+            });
+        }); 
+    </script>
 </body>
 </html>

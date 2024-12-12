@@ -25,7 +25,7 @@ if(isset($_POST["fioNew"]) && isset($_POST["statusNew"]) && isset($_POST["cityNe
     $city = $_POST["cityNew"];
     $postName = $_POST["postNew"];
     $loginNew = $_POST["loginNew"];
-    $insertNewVillager = "INSERT INTO `villagers`(`fio-villager`, `login-villager`, `status--villager`, `city-villager`, `post-villager`) VALUES ('$fio','$loginNew','$status','$city','$postName')";
+    $insertNewVillager = "INSERT INTO `villagers`(`fio-villager`, `login-villager`, `status--villager`, `city-villager`, `post-villager`,`picture`) VALUES ('$fio','$loginNew','$status','$city','$postName','')";
     $queryForNewVillager = mysqli_query($link, $insertNewVillager);
     if($queryForNewVillager){
         echo "Вы успешно добавили жителя!";
@@ -41,6 +41,7 @@ if(isset($_POST["fioNew"]) && isset($_POST["statusNew"]) && isset($_POST["cityNe
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вы губернатор</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a href="exit.php">Выйти из аккаунта</a>
@@ -70,17 +71,18 @@ if(isset($_POST["fioNew"]) && isset($_POST["statusNew"]) && isset($_POST["cityNe
             </select>
             <input type="submit" value="Добавить">
         </form>
+        
     <?php if($_SESSION["user"] == "gub"){
-        $selectAll = "SELECT `id-villager`,`login-villager` ,`fio-villager`, `status`.`name-status`, `ctities`.`name-city`, `post`.`name-post` FROM `villagers`,`status`,`post`,`ctities` WHERE `status`.`id-status` = `status--villager` AND `ctities`.`id-city` = `city-villager` AND `post`.`id-post` = `post-villager` AND `login-villager` NOT IN ('User1');";
+        $selectAll = "SELECT `id-villager`,`login-villager` ,`fio-villager`, `status`.`name-status`, `ctities`.`name-city`, `post`.`name-post`,`picture`  FROM `villagers`,`status`,`post`,`ctities`WHERE `status`.`id-status` = `status--villager` AND `ctities`.`id-city` = `city-villager` AND `post`.`id-post` = `post-villager` AND `login-villager` NOT IN ('User1');";
         $queryForAll = mysqli_query($link, $selectAll);
-        while($row = mysqli_fetch_assoc($queryForAll)){
-            ?>
+        while($row = mysqli_fetch_assoc($queryForAll)){?>
         <form action="" method="post">
             <input type="text" name="idVillager" value="<?php echo $row["id-villager"]; ?>" hidden>
             <input type="text" name="fio" value="<?php echo $row["fio-villager"]; ?>">
             <input type="text" name="status" value="<?php echo $row["name-status"]; ?>">
             <input type="text" name="city" value="<?php echo $row["name-city"]; ?>">
             <input type="text" name="postName" value="<?php echo $row["name-post"]; ?>">
+            <div width="50" height="50"><?php if(!empty($row["picture"])){ $pathImg = $row["picture"]; echo `<a href="#" class="link"><img width="50" height="50" src="images\\$pathImg" alt="У вас нет картинки"></a>`;}else{echo $row["picture"];} ?></div>
             <input type="submit" value="Изменить">
             <a href="delete.php?id=<?php echo $row["id-villager"]; ?>">Удалить</a>
         </form>
@@ -136,22 +138,36 @@ if(isset($_POST["fioNew"]) && isset($_POST["statusNew"]) && isset($_POST["cityNe
             if($procScientist == $procWorker && $procScientist == $procStudent){
                 $cityStatus = "Общий";
             }
-            //! Это решение по тз, является неверным
-            // if(($countStudent*100/$villagerCount)>=15){
-            //     $cityStatus = "Студенческий";
-            // }else if(($countWorker*100/$villagerCount)>= 15){
-            //     $cityStatus = "Рабочий";
-            // }else if(($countScientist*100/$villagerCount)>= 15){
-            //     $cityStatus = "Научный";
-            // }
             ?>
             <tr>
                 <td><?php echo $city["name-city"]; ?></td>
                 <td><?php echo $cityStatus; ?></td>
             </tr>
         <?php }?>
-
+        <dialog id="modal">
+                <article  class="modalInside">
+                    <a href="<?php echo $home; ?>.php" class="exit">X</a>
+                    <img src="images\<?php echo $pathImg; $_SESSION["path"] = ""; ?>" alt="">
+                </article>
+            </dialog>
     </table>
+    <script>
+        let allLink =document.querySelectorAll(".link");
+        let allExit =document.querySelectorAll(".exit");
+        let modal = document.querySelector("#modal");
+        allLink.forEach(link => {
+            link.addEventListener('click',(e)=>{
+                e.preventDefault();
+                modal.showModal();
+            });
+        }); 
+        allExit.forEach(exit => {
+            exit.addEventListener('click',(e)=>{
+                e.preventDefault();
+                modal.close();
+            });
+        }); 
+    </script>
     <style>form{margin-top: 10px;}#table{position:absolute;right:300px;top:100px;}</style>
 
 </body>

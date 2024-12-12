@@ -17,7 +17,7 @@ if(isset($_POST["login"]) && !empty($_POST["login"])){
             $_SESSION["user"] = "mer";
             header("Location:mer.php");
         }else if($row["name-status"] == "Житель"){
-            $_SESSION["user"] = "git";
+            $_SESSION["user"] = "villager";
             header("Location:villager.php");
         }
     }else{
